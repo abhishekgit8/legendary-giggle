@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  server_socket:
+    container_name: server_container
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+      args:
+        - NODE_ENV=local
+    network_mode: "host"
+    shm_size: 6g
+    volumes:
+      - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/etc/localtime:/etc/localtime:ro"
+    environment:
+      - DISPLAY=$DISPLAY
+      - QT_X11_NO_MITSHM=1
+      - ENABLE_ALERTS=TRUE
+      - PRINT_OUT=FALSE
+      - ROOT_DIR=/workspace/SP2023/
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'python3 server.py' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  client_socket:
+    container_name: client_container
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+      args:
+        - NODE_ENV=local
+    network_mode: "host"
+    shm_size: 6g
+    volumes:
+      - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/etc/localtime:/etc/localtime:ro"
+    environment:
+      - DISPLAY=$DISPLAY
+      - QT_X11_NO_MITSHM=1
+      - ENABLE_ALERTS=TRUE
+      - PRINT_OUT=FALSE
+      - ROOT_DIR=/workspace/SP2023/
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'python3 client.py' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
